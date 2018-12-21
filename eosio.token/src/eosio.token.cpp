@@ -10,7 +10,7 @@
 namespace eosio {
 
 /**
- * ÕâÀïµÄissueÊÇ·¢ĞĞÈË£¬ÒÔºó·¢ĞĞ¸Ã±ÒµÄ¿ØÖÆÈ¨ÏŞ
+ * è¿™é‡Œçš„issueæ˜¯å‘è¡Œäººï¼Œä»¥åå‘è¡Œè¯¥å¸çš„æ§åˆ¶æƒé™
  */
 void token::create(name issuer, asset maximum_supply) {
 	require_auth(_self);
@@ -24,8 +24,8 @@ void token::create(name issuer, asset maximum_supply) {
 	auto existing = statstable.find(sym.code().raw());
 	eosio_assert(existing == statstable.end(), "token with symbol already exists");
 
-	//_self£º´¢´æÊ±¸¶¿îÕË»§
-	statstable.emplace(_self, [&]( auto& s ) {//´´½¨Ò»¸öÁîÅÆ
+	//_selfï¼šå‚¨å­˜æ—¶ä»˜æ¬¾è´¦æˆ·
+	statstable.emplace(_self, [&]( auto& s ) {//åˆ›å»ºä¸€ä¸ªä»¤ç‰Œ
 		s.supply.symbol = maximum_supply.symbol;
 		s.max_supply = maximum_supply;
 		s.issuer = issuer;
@@ -33,15 +33,15 @@ void token::create(name issuer, asset maximum_supply) {
 }
 
 void token::issue(name to, asset quantity, string memo) {
-	//»ñÈ¡±êÖ¾
+	//è·å–æ ‡å¿—
 	auto sym = quantity.symbol;
 	eosio_assert(sym.is_valid(), "invalid symbol name");
-	//±¸×¢
+	//å¤‡æ³¨
 	eosio_assert(memo.size() <= 256, "memo has more than 256 bytes");
-	//´ËµØ¶¨ÒåµÄÒâË¼£¿
+	//æ­¤åœ°å®šä¹‰çš„æ„æ€ï¼Ÿ
 	stats statstable(_self, sym.code().raw());
 	auto existing = statstable.find(sym.code().raw());
-	//Ñ­»·ÅĞ¶ÏÊÇ·ñ´æÔÚ
+	//å¾ªç¯åˆ¤æ–­æ˜¯å¦å­˜åœ¨
 	eosio_assert(existing != statstable.end(), "token with symbol does not exist, create token before issue");
 	const auto& st = *existing;
 
@@ -56,11 +56,11 @@ void token::issue(name to, asset quantity, string memo) {
 		s.supply += quantity;
 	});
 
-	//Ôö¼ÓÓà¶î
+	//å¢åŠ ä½™é¢
 	add_balance(st.issuer, quantity, st.issuer);
 
 	if (to != st.issuer) {
-		//·¢ËÍÄÚÁª²Ù×÷
+		//å‘é€å†…è”æ“ä½œ
 		SEND_INLINE_ACTION(*this, transfer, { {st.issuer, "active"_n} }, { st.issuer, to, quantity, memo });
 	}
 }
@@ -81,7 +81,7 @@ void token::retire(asset quantity, string memo) {
 
 	eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
 
-	//ÕâÀïĞèÒª×¢Òâ£¬ÒªÔÚ½á¹¹ÌåÀïÃæ½øĞĞ¼ÆËã±Ò
+	//è¿™é‡Œéœ€è¦æ³¨æ„ï¼Œè¦åœ¨ç»“æ„ä½“é‡Œé¢è¿›è¡Œè®¡ç®—å¸
 	statstable.modify(st, same_payer, [&]( auto& s ) {
 		s.supply -= quantity;
 	});
@@ -92,13 +92,13 @@ void token::retire(asset quantity, string memo) {
 void token::transfer(name from, name to, asset quantity, string memo) {
 	eosio_assert(from != to, "cannot transfer to self");
 	require_auth(from);
-	//ÅĞ¶ÏÕË»§ÊÇ·ñ´æÔÚ
+	//åˆ¤æ–­è´¦æˆ·æ˜¯å¦å­˜åœ¨
 	eosio_assert(is_account(to), "to account does not exist");
 	auto sym = quantity.symbol.code();
 	stats statstable(_self, sym.raw());
 	const auto& st = statstable.get(sym.raw());
 
-	//·¢ËÍ»ØÖ´µ¥
+	//å‘é€å›æ‰§å•
 	require_recipient(from);
 	require_recipient(to);
 

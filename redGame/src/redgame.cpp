@@ -8,26 +8,26 @@
 // sudo eosio-cpp -o redgame.wasm redgame.cpp -abigen
 // cleos set contract redgame /home/wxp/contracts/redgame
 // cleos push action redgame deposit '[ "alice", "100.0000 SYS" ]' -p alice
-// »ñÈ¡±íÊı¾İ£ºcleos get table redgame redgame account
-// ²é¿´Óà¶î:cleos get currency balance eosio.token alice SYS
-// ÏÂ×¢ £º cleos push action redgame offerbet '[ "3.0000 SYS", "bob", "50ed53fcdaf27f88d51ea4e835b1055efe779bb87e6cfdff47d28c88ffb27129" ]' -p bob
-// ¹«²¼ÃØÔ¿ £º cleos push action redgame reveal '[ "50ed53fcdaf27f88d51ea4e835b1055efe779bb87e6cfdff47d28c88ffb27129", "15fe76d25e124b08feb835f12e00a879bd15666a33786e64b655891fba7d6c12" ]' -p bob
+// è·å–è¡¨æ•°æ®ï¼šcleos get table redgame redgame account
+// æŸ¥çœ‹ä½™é¢:cleos get currency balance eosio.token alice SYS
+// ä¸‹æ³¨ ï¼š cleos push action redgame offerbet '[ "3.0000 SYS", "bob", "50ed53fcdaf27f88d51ea4e835b1055efe779bb87e6cfdff47d28c88ffb27129" ]' -p bob
+// å…¬å¸ƒç§˜é’¥ ï¼š cleos push action redgame reveal '[ "50ed53fcdaf27f88d51ea4e835b1055efe779bb87e6cfdff47d28c88ffb27129", "15fe76d25e124b08feb835f12e00a879bd15666a33786e64b655891fba7d6c12" ]' -p bob
 //============================================================================
 
 #include "redgame.hpp"
 
-void redgame::deposit(const name from, const asset& quantity) {	  //ÏÂ×¢µÖÑº×Ê½ğ,Ïàµ±ÓÚÍæ¼ÒÏò¿ª·¢Õß×ªÕË
+void redgame::deposit(const name from, const asset& quantity) {	  //ä¸‹æ³¨æŠµæŠ¼èµ„é‡‘,ç›¸å½“äºç©å®¶å‘å¼€å‘è€…è½¬è´¦
 	require_auth(from);
 	account_index accounts(_code, _code.value);
 	eosio_assert(quantity.amount > 1, "must deposit positive quantity");
 	auto itr = accounts.find(from.value);
-	//ÔÚÕË»§ÁĞ±íÖĞ²éÕÒÒª×ª³ö´ú±ÒµÄÕËºÅÊÇ·ñ´æÔÚ
+	//åœ¨è´¦æˆ·åˆ—è¡¨ä¸­æŸ¥æ‰¾è¦è½¬å‡ºä»£å¸çš„è´¦å·æ˜¯å¦å­˜åœ¨
 	if (itr == accounts.end()) {
-		//²»´æÔÚµÄ»°¾Í²åÈëÕËºÅÁĞ±í
+		//ä¸å­˜åœ¨çš„è¯å°±æ’å…¥è´¦å·åˆ—è¡¨
 		itr = accounts.emplace(_code, [&](auto& acnt)
 		{
 				acnt.owner = from;
-				//ÕâÀïĞèÒª³õÊ¼»¯£º3050003 error,attempt to add asset with different symbol
+				//è¿™é‡Œéœ€è¦åˆå§‹åŒ–ï¼š3050003 error,attempt to add asset with different symbol
 				acnt.eos_balance = quantity;
 			});
 	} else {
@@ -35,9 +35,9 @@ void redgame::deposit(const name from, const asset& quantity) {	  //ÏÂ×¢µÖÑº×Ê½ğ
 			acnt.eos_balance += quantity;
 		});
 	}
-	//¶Ôeosio.tokenµÄtransfer½øĞĞºÏÔ¼µ÷ÓÃ£¬Íæ¼Ò¿ªÊ¼ÏÂ×¢×Ê½ğ
-	//ÕË»§(from)¶ÔÕË»§( _self)½øĞĞ×ªÕË£¬¶ÔÓ¦ÓÚÓÎÏ·ÖĞ£¬µÖÑº´ú±Òµ½
-	//Ïòdice×ªÕË£¬ÓÉÓÚÊ¹ÓÃµÄÊÇeos token£¬×ªÕËÍ¨¹ıeosio.tokenºÏÔ¼Ö´ĞĞ
+	//å¯¹eosio.tokençš„transferè¿›è¡Œåˆçº¦è°ƒç”¨ï¼Œç©å®¶å¼€å§‹ä¸‹æ³¨èµ„é‡‘
+	//è´¦æˆ·(from)å¯¹è´¦æˆ·( _self)è¿›è¡Œè½¬è´¦ï¼Œå¯¹åº”äºæ¸¸æˆä¸­ï¼ŒæŠµæŠ¼ä»£å¸åˆ°
+	//å‘diceè½¬è´¦ï¼Œç”±äºä½¿ç”¨çš„æ˜¯eos tokenï¼Œè½¬è´¦é€šè¿‡eosio.tokenåˆçº¦æ‰§è¡Œ
 	action(
 			permission_level { from, "active"_n },
 			"eosio.token"_n,
@@ -49,31 +49,31 @@ void redgame::deposit(const name from, const asset& quantity) {	  //ÏÂ×¢µÖÑº×Ê½ğ
 
 void redgame::withdraw(const name to, const asset& quantity) {
 	account_index accounts(_code, _code.value);
-	//Ê¤·½Ó®È¡×Ê½ğ
+	//èƒœæ–¹èµ¢å–èµ„é‡‘
 	require_auth(to);
 	eosio_assert(quantity.is_valid(), "invalid quantity");
 	eosio_assert(quantity.amount > 0, "must withdraw positive quantity");
 	auto itr = accounts.find(to.value);
-	//ÔÚÕË»§ÁĞ±íÖĞ²éÕÒÒª×ªÈë´ú±ÒµÄÕËºÅÊÇ·ñ´æÔÚ
+	//åœ¨è´¦æˆ·åˆ—è¡¨ä¸­æŸ¥æ‰¾è¦è½¬å…¥ä»£å¸çš„è´¦å·æ˜¯å¦å­˜åœ¨
 	eosio_assert(itr != accounts.end(), "unknown account");
 
 	accounts.modify(itr, to, [&](auto& acnt) {
-		//×ª³ö´ú±Ò
+		//è½¬å‡ºä»£å¸
 			eosio_assert( acnt.eos_balance >= quantity, "insufficient balance" );
 			acnt.eos_balance -= quantity;
 	});
-	//¶Ôeosio.tokenµÄtransfer½øĞĞºÏÔ¼µ÷ÓÃ£¬DiceÖ÷ÕËºÅ¶ÔÊ¤ÀûÒ»·½·¢ËÍ×Ê½ğ
-	//´ú±íÔÚ×Ê½ğ³·»Ø²Ù×÷ÖĞ£¬
-	//Í¨¹ıµ÷ÓÃeosio.tokenµÄtransfer£¬ÕË»§(_self)¶ÔÕË»§(to)½øĞĞ×ªÕË£¬
-	//¶ÔÓ¦ÓÚÓÎÏ·ÖĞ£¬DiceÖ÷ÕË»§ÎªÊ¤ÀûµÄÒ»·½·¢·ÅËùÓ®µÄ¶Ä×¢
-	//ÌáÏÖ¶¯×÷
-	//Ïàµ±ÓÚ£ºcleos push action eosio.token transfer '[_self, from, quantity]' -p _self@active
+	//å¯¹eosio.tokençš„transferè¿›è¡Œåˆçº¦è°ƒç”¨ï¼ŒDiceä¸»è´¦å·å¯¹èƒœåˆ©ä¸€æ–¹å‘é€èµ„é‡‘
+	//ä»£è¡¨åœ¨èµ„é‡‘æ’¤å›æ“ä½œä¸­ï¼Œ
+	//é€šè¿‡è°ƒç”¨eosio.tokençš„transferï¼Œè´¦æˆ·(_self)å¯¹è´¦æˆ·(to)è¿›è¡Œè½¬è´¦ï¼Œ
+	//å¯¹åº”äºæ¸¸æˆä¸­ï¼ŒDiceä¸»è´¦æˆ·ä¸ºèƒœåˆ©çš„ä¸€æ–¹å‘æ”¾æ‰€èµ¢çš„èµŒæ³¨
+	//æç°åŠ¨ä½œ
+	//ç›¸å½“äºï¼šcleos push action eosio.token transfer '[_self, from, quantity]' -p _self@active
 	action(
 			permission_level {_self, "active"_n },
 			"eosio.token"_n,
 			"transfer"_n,
 			std::make_tuple(_self, to, quantity, std::string(""))).send();
-	//Èç¹ûÕË»§Óà¶îÎª0£¬ÔòÉ¾³ıÕË»§
+	//å¦‚æœè´¦æˆ·ä½™é¢ä¸º0ï¼Œåˆ™åˆ é™¤è´¦æˆ·
 	if (itr->is_empty()) {
 		accounts.erase(itr);
 	}
@@ -85,42 +85,42 @@ void redgame::withdraw(const name to, const asset& quantity) {
 	  offer_index offers(_code, _code.value);
 	  game_index games(_code, _code.value);
 	  global_dice_index global_dices(_code, _code.value);
-      //ÏÂ×¢
-	  //eosio_assert ²Î¿¼ https://developers.eos.io/eosio-cpp/reference#eosio_assert
-	  //ÑéÖ¤ÏÂ×¢»õ±Ò
+      //ä¸‹æ³¨
+	  //eosio_assert å‚è€ƒ https://developers.eos.io/eosio-cpp/reference#eosio_assert
+	  //éªŒè¯ä¸‹æ³¨è´§å¸
       eosio_assert(bet.symbol == symbol("SYS", 4), "only core token allowed");
-      //ÅĞ¶ÏÊÇ·ñÓĞĞ§
+      //åˆ¤æ–­æ˜¯å¦æœ‰æ•ˆ
       eosio_assert(bet.is_valid(), "invalid bet");
       eosio_assert(bet.amount > 0, "must bet positive quantity");
 
-      //Èç¹ûÏÂ×¢ÒÑ¾­´æÔÚ£¬ÔòÍË³ö
+      //å¦‚æœä¸‹æ³¨å·²ç»å­˜åœ¨ï¼Œåˆ™é€€å‡º
       eosio_assert(!has_offer(commitment), "offer with this commitment already exist");
       require_auth(player);
 
-      auto cur_player_itr = accounts.find(player.value);                 //²éÕÒÓÃ»§£¬accountsÊÇÕË»§Êı¾İ±í
-      eosio_assert(cur_player_itr != accounts.end(), "unknown account"); //ÅĞ¶ÏÓÃ»§ÊÇ·ñ´æÔÚ
+      auto cur_player_itr = accounts.find(player.value);                 //æŸ¥æ‰¾ç”¨æˆ·ï¼Œaccountsæ˜¯è´¦æˆ·æ•°æ®è¡¨
+      eosio_assert(cur_player_itr != accounts.end(), "unknown account"); //åˆ¤æ–­ç”¨æˆ·æ˜¯å¦å­˜åœ¨
 
       // Store new offer
-      auto new_offer_itr = offers.emplace(_self, [&](auto &offer) {           //ÔÚÏÂ×¢µÄÊı¾İ±íÖĞ£¬ÓÃemplaceÌí¼ÓÊı¾İ
-          offer.id         = offers.available_primary_key();                  //Ê¹ÓÃ×ÔÔöĞÍÖ÷¼ü
+      auto new_offer_itr = offers.emplace(_self, [&](auto &offer) {           //åœ¨ä¸‹æ³¨çš„æ•°æ®è¡¨ä¸­ï¼Œç”¨emplaceæ·»åŠ æ•°æ®
+          offer.id         = offers.available_primary_key();                  //ä½¿ç”¨è‡ªå¢å‹ä¸»é”®
           offer.bet        = bet;
           offer.owner      = player;
           offer.commitment = commitment;
-          offer.gameid     = 0;   											  //ÓÎÏ·id
+          offer.gameid     = 0;   											  //æ¸¸æˆid
       });
       // Try to find a matching bet
-      // Ñ°ÕÒÊÇ·ñÏàÍ¬½ğ¶îµÄÏÂ×¢·½
+      // å¯»æ‰¾æ˜¯å¦ç›¸åŒé‡‘é¢çš„ä¸‹æ³¨æ–¹
       auto idx = offers.template get_index<"bet"_n>();
-      //±íÊ¾²éÑ¯×îµÍÖµ±ß½ç
+      //è¡¨ç¤ºæŸ¥è¯¢æœ€ä½å€¼è¾¹ç•Œ
       auto matched_offer_itr = idx.lower_bound((uint64_t)new_offer_itr->bet.amount);
 
       if (matched_offer_itr == idx.end() || matched_offer_itr->bet != new_offer_itr->bet || matched_offer_itr->owner == new_offer_itr->owner)
       {
           // No matching bet found, update player's account
           accounts.modify( cur_player_itr, _self, [&](auto& acnt) {
-             eosio_assert( acnt.eos_balance >= bet, "insufficient balance" );//³äÖµ¶î²»¹»
-             acnt.eos_balance -= bet; //¿Û³ıÓà¶î
-             acnt.open_offers++;      //ÏÂ×¢´ÎÊı+1
+             eosio_assert( acnt.eos_balance >= bet, "insufficient balance" );//å……å€¼é¢ä¸å¤Ÿ
+             acnt.eos_balance -= bet; //æ‰£é™¤ä½™é¢
+             acnt.open_offers++;      //ä¸‹æ³¨æ¬¡æ•°+1
           });
        } else {
          // Create global game counter if not exists
@@ -202,35 +202,35 @@ void redgame::withdraw(const name to, const asset& quantity) {
 		game_index games(_code, _code.value);
 		global_dice_index global_dices(_code, _code.value);
 	   /**
-	    * source£º½âÃÜÃØÔ¿
-	    * sizeof:»ñÈ¡¶ÔÏóËùÕ¼ÄÚ´æ£¬ÕâÀïÈ¡hashÖµ³¤¶È¡£
-	    * commitment£º¼ÓÃÜhashÖµ¡£
+	    * sourceï¼šè§£å¯†ç§˜é’¥
+	    * sizeof:è·å–å¯¹è±¡æ‰€å å†…å­˜ï¼Œè¿™é‡Œå–hashå€¼é•¿åº¦ã€‚
+	    * commitmentï¼šåŠ å¯†hashå€¼ã€‚
 	    */
 	   assert_sha256( (char *)&source, sizeof(source), (const capi_checksum256 *)&commitment );
 
-	   //»ñÈ¡µ±Ç°Ö´ĞĞrevealµÄÈËµÄSHA256
+	   //è·å–å½“å‰æ‰§è¡Œrevealçš„äººçš„SHA256
 	   auto idx = offers.template get_index<"commitment"_n>();
 	   auto curr_revealer_offer = idx.find(offer::get_commitment(commitment));
 	   eosio_assert(curr_revealer_offer != idx.end(), "offer not found");
-	   eosio_assert(curr_revealer_offer->gameid > 0, "unable to reveal"); //Èç¹ûÒÑ¾­¿ª¹ı
+	   eosio_assert(curr_revealer_offer->gameid > 0, "unable to reveal"); //å¦‚æœå·²ç»å¼€è¿‡
 
-	   //²éÑ¯¶ÔÓ¦µÄgame
+	   //æŸ¥è¯¢å¯¹åº”çš„game
 	   auto game_itr = games.find( curr_revealer_offer->gameid);
 	   eosio_assert(game_itr != games.end(), "games does not exist");
 
-	   player curr_reveal = game_itr->player1; //»ñÈ¡Íæ¼Ò1
-	   player prev_reveal = game_itr->player2; //»ñÈ¡Íæ¼Ò2
+	   player curr_reveal = game_itr->player1; //è·å–ç©å®¶1
+	   player prev_reveal = game_itr->player2; //è·å–ç©å®¶2
 
 	   if( !is_equal(curr_reveal.commitment, commitment) ) {
-		  //½»»»Î»ÖÃ
+		  //äº¤æ¢ä½ç½®
 		  std::swap(curr_reveal, prev_reveal);
 	   }
-	   eosio_assert( is_zero(curr_reveal.reveal) == true, "player already revealed");//ÅĞ¶ÏÍæ¼ÒÊÇ·ñÒÑ¾­¿ª½±
+	   eosio_assert( is_zero(curr_reveal.reveal) == true, "player already revealed");//åˆ¤æ–­ç©å®¶æ˜¯å¦å·²ç»å¼€å¥–
 
 	   if( !is_zero(prev_reveal.reveal) ) {
-		  //±È½ÏË«·½Ëæ»úÊıµÄ´óĞ¡
+		  //æ¯”è¾ƒåŒæ–¹éšæœºæ•°çš„å¤§å°
 		  capi_checksum256 result;
-		  //¼ìÑéhashÖµ
+		  //æ£€éªŒhashå€¼
 		  sha256( (char *)&game_itr->player1, sizeof(player)*2, &result);
 
 		  auto prev_revealer_offer = idx.find( offer::get_commitment(prev_reveal.commitment) );

@@ -5,7 +5,7 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/print.hpp>
 #include <eosiolib/asset.hpp>
-#include <eosiolib/time.hpp>  //eosioÊ±¼ä¹ÜÀí¿â
+#include <eosiolib/time.hpp>  //eosioæ—¶é—´ç®¡ç†åº“
 #include <eosiolib/crypto.h>
 #include <eosiolib/print.hpp>
 
@@ -14,7 +14,7 @@ using namespace eosio;
 class [[eosio::contract]]redgame: public eosio::contract {
 public:
 	using contract::contract;
-	//¹¹Ôìº¯Êı³õÊ¼»¯ºÏÔ¼
+	//æ„é€ å‡½æ•°åˆå§‹åŒ–åˆçº¦
 	redgame(name receiver, name code, datastream<const char*> ds) :
 			contract(receiver, code, ds) {
 	}
@@ -83,30 +83,30 @@ private:
 		}
 	};
 
-	//¶àË÷Òı¶¨Òå
+	//å¤šç´¢å¼•å®šä¹‰
 	typedef eosio::multi_index<"offer"_n, offer, indexed_by<"bet"_n, const_mem_fun<offer, uint64_t, &offer::by_bet> >,
 			indexed_by<"commitment"_n, const_mem_fun<offer, key256, &offer::by_commitment> >> offer_index;
 
-	struct player //Íæ¼ÒÊı¾İ½á¹¹£¬Õâ¸ö²»ÓÃ×ö³ÉÊı¾İ±í£¬²»ĞèÒª @abi table
+	struct player //ç©å®¶æ•°æ®ç»“æ„ï¼Œè¿™ä¸ªä¸ç”¨åšæˆæ•°æ®è¡¨ï¼Œä¸éœ€è¦ @abi table
 	{
-		capi_checksum256 commitment;       //Íæ¼ÒµÄSHA256
-		capi_checksum256 reveal;           //Íæ¼ÒµÄËæ»úÃÜÔ¿£¬Õâ¸öÃÜÔ¿ÓÃÀ´Éú³ÉÉÏÃæµÄSHA256
+		capi_checksum256 commitment;       //ç©å®¶çš„SHA256
+		capi_checksum256 reveal;           //ç©å®¶çš„éšæœºå¯†é’¥ï¼Œè¿™ä¸ªå¯†é’¥ç”¨æ¥ç”Ÿæˆä¸Šé¢çš„SHA256
 	};
 
 	struct [[eosio::table]] game {
-		uint64_t id;                       //ÓÎÏ·ID
-		asset bet;                         //ÏÂ×¢Ê÷
-		eosio::time_point_sec deadline;    //µ½ÆÚÊ±¼ä,¼Ó5·ÖÖÓ
-		player player1;                      //Íæ¼Ò1
-		player player2;                      //Íæ¼Ò2
+		uint64_t id;                       //æ¸¸æˆID
+		asset bet;                         //ä¸‹æ³¨æ ‘
+		eosio::time_point_sec deadline;    //åˆ°æœŸæ—¶é—´,åŠ 5åˆ†é’Ÿ
+		player player1;                      //ç©å®¶1
+		player player2;                      //ç©å®¶2
 		uint64_t primary_key() const {
 			return id;
-		}  //ÉèÖÃÖ÷¼ü
+		}  //è®¾ç½®ä¸»é”®
 	};
-	typedef eosio::multi_index<"game"_n, game> game_index; //¶¨ÒåÒ»¸ögameÀàĞÍ£ºgame_index
+	typedef eosio::multi_index<"game"_n, game> game_index; //å®šä¹‰ä¸€ä¸ªgameç±»å‹ï¼šgame_index
 
 	/**
-	 * ¼ÆÊıÆ÷
+	 * è®¡æ•°å™¨
 	 */
 	struct [[eosio::table]] global_dice {
 		uint64_t id = 0;
@@ -118,13 +118,13 @@ private:
 
 	typedef eosio::multi_index<"global"_n, global_dice> global_dice_index;
 
-	//ÄÚ²¿º¯Êı
+	//å†…éƒ¨å‡½æ•°
 	bool has_offer(const capi_checksum256 &commitment) const {
 		offer_index offers(_code, _code.value);
-		//ÊÇ·ñÒÑ¾­ÏÂ×¢
-		auto idx = offers.template get_index<"commitment"_n>(); //ÔÚ¶àË÷ÒıÊı¾İ±íÖĞ²éÕÒ·ÇÖ÷¼üÊı¾İµÄ·½·¨
+		//æ˜¯å¦å·²ç»ä¸‹æ³¨
+		auto idx = offers.template get_index<"commitment"_n>(); //åœ¨å¤šç´¢å¼•æ•°æ®è¡¨ä¸­æŸ¥æ‰¾éä¸»é”®æ•°æ®çš„æ–¹æ³•
 		auto itr = idx.find(offer::get_commitment(commitment));
-		//²»µÈÓÚ±íÊ¾´æÔÚ
+		//ä¸ç­‰äºè¡¨ç¤ºå­˜åœ¨
 		return itr != idx.end();
 	}
 
@@ -133,7 +133,7 @@ private:
 	}
 
 	/**
-	 * ÅĞ¶ÏÊÇ·ñÎª0
+	 * åˆ¤æ–­æ˜¯å¦ä¸º0
 	 */
 	bool is_zero(const capi_checksum256 &a) const {
 		const uint64_t *p64 = reinterpret_cast<const uint64_t *>(&a);
